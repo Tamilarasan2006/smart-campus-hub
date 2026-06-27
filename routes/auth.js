@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
     });
 
     await newUser.save();
-    res.status(201).send('Registration successful! <a href="/login.html">Login here</a>');
+    res.redirect('/login.html');
   } catch (err) {
     res.status(500).send(`Error registering user: ${err.message}. <a href="/register.html">Try again</a>`);
   }
@@ -56,7 +56,7 @@ router.post('/login', async (req, res) => {
     // CRITICAL: Console log user details upon successful login
     console.log(`[AUTH SUCCESS] User logged in: ${user.Name} | Role: ${user.Role}`);
 
-    res.send(`Successfully logged in! <br> Welcome, ${user.Name} (${user.Role}). <br> <a href="/logout">Logout</a>`);
+    res.redirect('/dashboard.html');
   } catch (err) {
     res.status(500).send(`Login error: ${err.message}. <a href="/login.html">Try again</a>`);
   }
@@ -68,7 +68,7 @@ router.get('/logout', (req, res) => {
     if (err) {
       return res.status(500).send('Could not log out. Please try again.');
     }
-    res.send('You have been logged out. <a href="/login.html">Login again</a>');
+    res.redirect('/login.html');
   });
 });
 
