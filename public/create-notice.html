@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus - Create Notice</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>Smart Campus Hub</h1>
+      <div class="nav-links">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/my-hub.html">My Personal Hub</a>
+        <a href="/create-notice.html" class="active">Publish Notice</a>
+        <a href="/create-event.html">Submit Event</a>
+        <a href="/auth/logout" class="logout-btn">Logout</a>
+      </div>
+    </header>
+
+    <div class="auth-container" style="max-width: 650px; margin: 20px auto; padding: 30px;">
+      <h2 class="section-title" style="margin-bottom: 8px;">Create Notice</h2>
+      <p class="subtitle" style="text-align: left; margin-bottom: 24px;">Publish an announcement on the main bulletin board.</p>
+      
+      <form action="/notices/create" method="POST">
+        <div class="form-group">
+          <label for="Title">Notice Title</label>
+          <input type="text" id="Title" name="Title" placeholder="e.g. Schedule for Mid-Term Exams" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="Content">Content Body</label>
+          <textarea id="Content" name="Content" rows="6" placeholder="Enter notice announcement text..." required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="Category">Category</label>
+          <select id="Category" name="Category" required>
+            <option value="">-- Select Category --</option>
+            <option value="Exams">Exams</option>
+            <option value="Placement">Placement</option>
+            <option value="Holiday">Holiday</option>
+            <option value="Fees">Fees</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="Department">Target Department</label>
+          <input type="text" id="Department" name="Department" placeholder="e.g. CSE, ECE, All (Leave blank for default)">
+        </div>
+        
+        <div class="form-group">
+          <label for="ExpiryDate">Expiry Date (Notice will automatically disappear after this date)</label>
+          <input type="date" id="ExpiryDate" name="ExpiryDate">
+        </div>
+        
+        <button type="submit" class="btn-submit" style="background: var(--primary);">Publish Notice</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

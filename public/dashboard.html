@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus - Notice Board and Events</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>Smart Campus Hub</h1>
+      <div class="nav-links">
+        <a href="/dashboard.html" class="active">Dashboard</a>
+        <a href="/my-hub.html">My Personal Hub</a>
+        <a href="/create-notice.html">Publish Notice</a>
+        <a href="/create-event.html">Submit Event</a>
+        <a href="/admin.html">Admin Approval</a>
+        <a href="/auth/logout" class="logout-btn">Logout</a>
+      </div>
+    </header>
+
+    <div class="columns">
+      <!-- Notices Board Column -->
+      <div class="column">
+        <h2 class="section-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Campus Notice Board
+        </h2>
+        
+        <div class="filters">
+          <label for="categoryFilter">Filter Category:</label>
+          <select id="categoryFilter">
+            <option value="">All Categories</option>
+            <option value="Exams">Exams</option>
+            <option value="Placement">Placement</option>
+            <option value="Holiday">Holiday</option>
+            <option value="Fees">Fees</option>
+            <option value="General">General</option>
+          </select>
+          <button class="btn-action btn-secondary" onclick="loadNotices()" style="padding: 6px 12px; font-size: 0.85rem;">Refresh</button>
+        </div>
+        
+        <div id="noticesContainer">Loading notices...</div>
+      </div>
+
+      <!-- Events Hub Column -->
+      <div class="column">
+        <h2 class="section-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Upcoming Campus Events
+        </h2>
+        
+        <div class="filters" style="justify-content: flex-end;">
+          <button class="btn-action btn-secondary" onclick="loadEvents()" style="padding: 6px 12px; font-size: 0.85rem;">Refresh Events</button>
+        </div>
+        
+        <div id="eventsContainer">Loading events...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fetch and display active notices
+    async function loadNotices() {
+      const container = document.getElementById('noticesContainer');
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      
+      let url = '/notices';
+      if (categoryFilter) {
+        url += `?category=${encodeURIComponent(categoryFilter)}`;
+      }
+
+      try {
+        container.innerHTML = '<div class="info-empty">Loading notices...</div>';
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const notices = await response.json();
+        
+        if (notices.length === 0) {
+          container.innerHTML = '<div class="info-empty">No active notices found in this category.</div>';
+          return;
+        }
+
+        container.innerHTML = notices.map(notice => {
+          const date = new Date(notice.DatePosted).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          const creatorName = notice.CreatedBy ? notice.CreatedBy.Name : 'Staff/Admin';
+          const dept = notice.Department || 'All';
+          const expiryStr = notice.ExpiryDate 
+            ? ` | Expires: ${new Date(notice.ExpiryDate).toLocaleDateString()}` 
+            : '';
+
+          return `
+            <div class="notice-card ${notice.Category}">
+              <h3 class="notice-title">${escapeHTML(notice.Title)}</h3>
+              <div class="notice-meta">
+                <span class="badge ${notice.Category}">${notice.Category}</span>
+                <span>Posted on ${date}</span>
+                <span>By: <strong>${escapeHTML(creatorName)}</strong> (${escapeHTML(notice.CreatedBy ? notice.CreatedBy.Role : 'Faculty')})</span>
+                <span>Dept: <strong>${escapeHTML(dept)}</strong></span>
+                <span>${expiryStr}</span>
+              </div>
+              <div class="notice-content">${escapeHTML(notice.Content)}</div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="alert-box alert-error">Failed to load notices: ${err.message}</div>`;
+      }
+    }
+
+    // Fetch and display approved events
+    async function loadEvents() {
+      const container = document.getElementById('eventsContainer');
+      try {
+        container.innerHTML = '<div class="info-empty">Loading events...</div>';
+        const response = await fetch('/events');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const events = await response.json();
+        
+        if (events.length === 0) {
+          container.innerHTML = '<div class="info-empty">No upcoming approved events scheduled. Check back later!</div>';
+          return;
+        }
+
+        container.innerHTML = events.map(event => {
+          const date = new Date(event.EventDate).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          const limitStr = event.RegistrationLimit ? event.RegistrationLimit : 'Unlimited';
+          const attendeeCount = event.Attendees ? event.Attendees.length : 0;
+          const host = event.HostClubOrDept || 'General';
+
+          return `
+            <div class="notice-card event-card">
+              <h3 class="notice-title">${escapeHTML(event.EventName)}</h3>
+              <div class="notice-meta">
+                <span class="badge" style="background-color: var(--success-light); color: var(--success-hover);">${escapeHTML(host)}</span>
+                <span>Date: <strong>${date}</strong></span>
+                <span>Venue: <strong>${escapeHTML(event.Venue)}</strong></span>
+              </div>
+              <div class="notice-content">${escapeHTML(event.Description)}</div>
+              
+              <div class="event-card-actions" style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                  RSVPs: <strong>${attendeeCount}</strong> / ${limitStr}
+                </span>
+                <button class="btn-action btn-success" onclick="registerForEvent('${event._id}')">Register Now</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="alert-box alert-error">Failed to load events: ${err.message}</div>`;
+      }
+    }
+
+    // One-click event registration handler
+    async function registerForEvent(eventId) {
+      try {
+        const response = await fetch(`/events/${eventId}/register`, {
+          method: 'POST'
+        });
+        const message = await response.text();
+        alert(message);
+        loadEvents(); // Reload events list to show updated register numbers
+      } catch (err) {
+        alert(`Failed to register: ${err.message}`);
+      }
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    // Attach listeners and start loading content
+    document.getElementById('categoryFilter').addEventListener('change', loadNotices);
+    window.addEventListener('DOMContentLoaded', () => {
+      loadNotices();
+      loadEvents();
+    });
+  </script>
+</body>
+</html>

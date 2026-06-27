@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus - Submit Event</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>Smart Campus Hub</h1>
+      <div class="nav-links">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/my-hub.html">My Personal Hub</a>
+        <a href="/create-notice.html">Publish Notice</a>
+        <a href="/create-event.html" class="active">Submit Event</a>
+        <a href="/auth/logout" class="logout-btn">Logout</a>
+      </div>
+    </header>
+
+    <div class="auth-container" style="max-width: 650px; margin: 20px auto; padding: 30px;">
+      <h2 class="section-title" style="margin-bottom: 8px;">Propose Event</h2>
+      <p class="subtitle" style="text-align: left; margin-bottom: 24px;">Submit a new event proposed by your department or club.</p>
+      
+      <form action="/events/create" method="POST">
+        <div class="form-group">
+          <label for="EventName">Event Name</label>
+          <input type="text" id="EventName" name="EventName" placeholder="e.g. Annual Hackathon 2026" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="HostClubOrDept">Host Club / Department</label>
+          <input type="text" id="HostClubOrDept" name="HostClubOrDept" placeholder="e.g. Science Association, CSE Club" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="Description">Event Description</label>
+          <textarea id="Description" name="Description" rows="6" placeholder="Detail the event agenda, speaker, prizes, prerequisites..." required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="EventDate">Event Date & Time</label>
+          <input type="datetime-local" id="EventDate" name="EventDate" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="Venue">Venue / Location</label>
+          <input type="text" id="Venue" name="Venue" placeholder="e.g. Tech Seminar Hall, Google Meet" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="RegistrationLimit">Registration Limit</label>
+          <input type="number" id="RegistrationLimit" name="RegistrationLimit" min="1" placeholder="Leave empty for unlimited registrations">
+        </div>
+        
+        <button type="submit" class="btn-submit" style="background: var(--success);">Submit Event Proposal</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

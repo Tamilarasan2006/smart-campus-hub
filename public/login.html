@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus - Login</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Login</h1>
+    <p class="subtitle">Access the Notice Board & Event Hub</p>
+    
+    <form action="/auth/login" method="POST">
+      <div class="form-group">
+        <label for="CollegeEmail">College Email</label>
+        <input type="email" id="CollegeEmail" name="CollegeEmail" placeholder="yourname@college.edu" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="Password">Password</label>
+        <input type="password" id="Password" name="Password" placeholder="••••••••" required>
+      </div>
+      
+      <button type="submit" class="btn-submit">Login</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+      Don't have an account yet? <a href="/register.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Register here</a>
+    </p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus - Admin Approval Portal</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>Smart Campus Hub</h1>
+      <div class="nav-links">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/my-hub.html">My Personal Hub</a>
+        <a href="/create-notice.html">Publish Notice</a>
+        <a href="/create-event.html">Submit Event</a>
+        <a href="/admin.html" class="active">Admin Approval</a>
+        <a href="/auth/logout" class="logout-btn">Logout</a>
+      </div>
+    </header>
+
+    <div class="column" style="max-width: 900px; margin: 0 auto; padding: 30px;">
+      <h2 class="section-title" style="color: var(--warning);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Admin Approval Portal
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px;">
+        Review event proposals submitted by student clubs and faculty. Approve or reject requests to update the main calendar.
+      </p>
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 24px;">
+
+      <div id="pendingEventsContainer">Loading pending events...</div>
+    </div>
+  </div>
+
+  <script>
+    async function loadPendingEvents() {
+      const container = document.getElementById('pendingEventsContainer');
+      try {
+        container.innerHTML = '<div class="info-empty">Loading pending events...</div>';
+        const response = await fetch('/admin/pending-events');
+        
+        if (response.status === 401 || response.status === 403) {
+          container.innerHTML = `
+            <div class="alert-box alert-error" style="text-align: center; padding: 30px;">
+              <h3 style="margin-bottom: 8px;">Access Denied</h3>
+              <p style="margin-bottom: 16px;">
+                ${response.status === 401 ? 'Please login first.' : 'Only administrator accounts can view this page.'}
+              </p>
+              <a href="/login.html" class="btn-action btn-primary" style="text-decoration: none;">Go to Login</a>
+            </div>
+          `;
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const events = await response.json();
+        
+        if (events.length === 0) {
+          container.innerHTML = '<div class="info-empty">No pending events awaiting approval.</div>';
+          return;
+        }
+
+        container.innerHTML = events.map(event => {
+          const date = new Date(event.EventDate).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          const limitStr = event.RegistrationLimit ? event.RegistrationLimit : 'Unlimited';
+          const proposer = event.CreatedBy ? `${event.CreatedBy.Name} (${event.CreatedBy.Role})` : 'Unknown Proposer';
+
+          return `
+            <div class="notice-card event-card" style="border-left: 4px solid var(--warning);">
+              <h3 class="notice-title">${escapeHTML(event.EventName)}</h3>
+              <div class="notice-meta">
+                <span class="badge" style="background-color: var(--warning-light); color: #b45309;">Proposed by: ${escapeHTML(proposer)}</span>
+                <span>Host: <strong>${escapeHTML(event.HostClubOrDept)}</strong></span>
+                <span>Venue: <strong>${escapeHTML(event.Venue)}</strong></span>
+                <span>Limit: <strong>${limitStr}</strong></span>
+              </div>
+              <div class="notice-content" style="margin-bottom: 16px;">${escapeHTML(event.Description)}</div>
+              <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-action btn-success" onclick="updateStatus('${event._id}', 'approved')">Approve</button>
+                <button class="btn-action btn-danger" onclick="updateStatus('${event._id}', 'rejected')">Reject</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="alert-box alert-error">Error fetching pending events: ${err.message}</div>`;
+      }
+    }
+
+    async function updateStatus(eventId, newStatus) {
+      try {
+        const response = await fetch(`/admin/events/${eventId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        const result = await response.text();
+        alert(result);
+        loadPendingEvents(); // Refresh pending list
+      } catch (err) {
+        alert(`Failed to update event status: ${err.message}`);
+      }
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    window.addEventListener('DOMContentLoaded', loadPendingEvents);
+  </script>
+</body>
+</html>
